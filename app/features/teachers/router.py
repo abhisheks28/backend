@@ -25,11 +25,12 @@ async def get_all_teachers():
         # And aggregate mentorships/grades
         
         # 1. Basic Teacher Info
+        # Use LEFT JOIN to ensure we see teachers even if user link is broken
         teachers = await conn.fetch("""
             SELECT t.teacher_id, t.school, t.subject, u.user_id, u.firebase_uid, u.name, u.role, u.created_at,
                    t.email_id as teacher_email, t.phone_number as teacher_phone
             FROM teachers t
-            JOIN users u ON t.user_id = u.user_id
+            LEFT JOIN users u ON t.user_id = u.user_id
         """)
         
         results = []
@@ -49,23 +50,33 @@ async def get_all_teachers():
                     if teaching_profile.get(col_name):
                         assigned_grades.append(grade_str)
             
-            # 4. Get ticket code (username from credentials) - optional but used in frontend
-            # Assuming username in credentials is the ticket code
-            ticket_code = await conn.fetchval("""
-                SELECT username FROM credentials WHERE user_id = $1
-            """, t['user_id'])
+            # 4. Get ticket code
+            ticket_code = "N/A"
+            if t['user_id']:
+                ticket_code = await conn.fetchval("""
+                    SELECT username FROM credentials WHERE user_id = $1
+                """, t['user_id']) or "N/A"
             
+            # Handle missing user data
+            uid = t['firebase_uid'] or f"orphan-{t['teacher_id']}"
+            name = t['name'] or "Unknown (Orphan)"
+            role = t['role'] or "teacher"
+            # Prefer teacher table contact info, fallback to None
+            email = t['teacher_email']
+            phone = t['teacher_phone']
+            created_at = t['created_at'].isoformat() if t['created_at'] else None
+
             results.append({
-                "uid": t['firebase_uid'] or str(t['user_id']), # Use firebase_uid as key
-                "name": t['name'],
-                "email": t['teacher_email'],
-                "phoneNumber": t['teacher_phone'],
+                "uid": uid,
+                "name": name,
+                "email": email,
+                "phoneNumber": phone,
                 "schoolName": t['school'],
-                "ticketCode": ticket_code or "N/A",
+                "ticketCode": ticket_code,
                 "totalStudents": student_count,
                 "assignedGradesCount": len(assigned_grades),
                 "assignedGrades": assigned_grades,
-                "createdAt": t['created_at'].isoformat() if t['created_at'] else None
+                "createdAt": created_at
             })
             
         return results
