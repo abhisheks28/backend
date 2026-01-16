@@ -15,6 +15,7 @@ class Database:
                     host=settings.DB_HOST,
                     port=settings.DB_PORT,
                     database=settings.DB_NAME,
+                    statement_cache_size=0
                 )
                 print("Connected to PostgreSQL.")
             except Exception as e:
