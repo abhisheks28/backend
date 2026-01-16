@@ -13,7 +13,7 @@ GRADE_COLUMN_MAP = {
     "SAT": "sat", "NEET": "neet", "CET": "cet", "JEE Mains": "jee_mains", "JEE Adv": "jee_adv"
 }
 
-@router.get("/")
+@router.get("")
 async def get_all_teachers():
     """
     Get all teachers with their stats (assigned grades count, student count).
