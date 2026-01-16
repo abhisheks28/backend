@@ -59,6 +59,7 @@ class UserRegisterRequest(BaseModel):
     parent_name: Optional[str] = None
     subject: Optional[str] = None
     children: Optional[List[Dict[str, Any]]] = None
+    profession: Optional[str] = None
 
 class LoginRequest(BaseModel):
     email: str

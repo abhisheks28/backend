@@ -89,8 +89,8 @@ async def register(request: UserRegisterRequest):
                              )
             elif role == 'guest':
                  await conn.execute(
-                    "INSERT INTO guests (user_id, email_id, phone_number) VALUES ($1, $2, $3)",
-                    user_id, email, phone
+                    "INSERT INTO guests (user_id, email_id, phone_number, profession) VALUES ($1, $2, $3, $4)",
+                    user_id, email, phone, request.profession
                 )
 
             # Generate Token
